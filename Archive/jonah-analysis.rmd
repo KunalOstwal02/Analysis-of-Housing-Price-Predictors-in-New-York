@@ -1,0 +1,121 @@
+---
+title: "CC08E2: Group Project"
+author: "Kunal Ostwal - 500668171"
+date: "2022-10-05"
+output: ioslides_presentation
+---
+
+```{r, include=FALSE, message=FALSE, echo=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(psych)
+library(scales)
+library(qtlcharts)
+library(caret)
+```
+
+```{r, include=FALSE, message=FALSE, echo=FALSE}
+#houses <- read.table(file = ".\\resources\\housing-prices-ge19.txt", sep = "\t", header = TRUE)
+houses <- read.table(file = "./resources/housing-prices-ge19.txt", sep = "\t", header = TRUE)
+
+```
+
+```{r, include=FALSE, echo=FALSE, message=FALSE}
+houses <- houses %>% 
+  mutate(
+    Waterfront = factor(Waterfront),
+    New.Construct = factor(New.Construct),
+    Central.Air = factor(Central.Air),
+    Fuel.Type = factor(Fuel.Type),
+    Heat.Type = factor(Heat.Type),
+    Sewer.Type = factor(Sewer.Type),
+    Test = factor(Test)
+  )
+
+```
+
+
+## Abstract: 
+> A one paragraph summary of what you set out to learn, and what you ended up finding. It should summarise the entire report.
+
+## Introduction: 
+> A discussion of what questions you are trying to answer.
+    
+## Data set: 
+> Describe details about how the data set was collected (if known) and the variables in the data set.
+
+The data collected is a random sample of 1734 houses taken from full Saratoga Housing Data [(De Veaux)](https://rdrr.io/cran/mosaicData/man/SaratogaHouses.html]).
+
+```{r}
+str(houses)
+```
+
+
+## Analysis:
+> Describe how you used multiple regression to analyse the data set. Specifically, you should discuss how you carried out the steps in analysis discussed in class, i.e., exploration of data to find an initial reasonable model (variable selection), checking the model and any changes to the model based on your checking of the model (e.g. transformations).
+
+## Analysis (exploration):
+ 
+ - There are a number features of the data set such as `Living.Area`, `Age`,`Land.Value`, that seem like they ought to prima facie have a strong correlation with `Price`. Indeed, a heat map of the correlation between each pair of variables shows a number of interesting things.
+ 
+```{r, echo=FALSE, message=FALSE}
+# select numeric or integer type factors
+temp = select(houses, - which(sapply(houses, class) == "factor"))
+cor_mat = cor(temp)
+
+melted_cor_mat = cor_mat %>%
+  data.frame() %>% 
+  rownames_to_column(var = "var1") %>% 
+  gather(key = "var2", value = "cor", -var1)
+
+# correlation matrix heatmap
+melted_cor_mat %>% ggplot() + 
+  aes(x=var1, y=var2, fill=cor) + 
+  geom_tile() + theme_minimal(base_size = 30) +
+  scale_fill_gradient2(
+    low = "red", high = "darkgreen", mid = "white", 
+    midpoint = 0, limit = c(-1,1)) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 10), 
+        axis.text.y = element_text(hjust = 1, size = 10))
+```
+
+## Analysis (exploration):
+
+- The features `Bathrroms`, `Rooms`, and `Land.Value` all have a strong correlation coefficient with `Price`;
+
+- surprisingly, `Age` has a small relationship with `Price`;
+
+- less suprisingly, `Living.Area` has the greatest correlation coefficient with `Price` of $0.71$.
+
+```{r, echo=FALSE, message=FALSE}
+# interactive plot using 'qtlcharts'
+iplotCorr(temp)
+```
+
+## Analysis (simple regression):
+
+ - Consequently, we decided to produce a simple linear model between `Living.Area` and `Price`, described by the equation $$y = 12844.1787 + 113.3729 x$$.
+```{r, echo=FALSE, message=FALSE, fig.width = 6, fig.height = 4}
+lm = lm(Price ~ Living.Area, data = houses)
+
+#plot(Price ~ Living.Area, data = housing)
+#abline(lm, lwd = 3, col = "red")
+
+houses %>% ggplot() + 
+  aes(y = Price, x = Living.Area) + 
+  geom_point(alpha = 0.25) + 
+  geom_smooth(method = "lm") + 
+  labs(x = "Living Area (square feet)", y = "Price (US dollars)") + 
+  scale_y_continuous(labels = comma)
+```
+### Complex regression
+
+## Assumptions:
+
+## Results: 
+> Provide inferences about any questions of interest that you identify and interpretation of parameter estimates where needed. Discuss the performance of your selected model.
+    
+## Discussion and conclusion: 
+> Describe any limitations of your analysis and how they might be overcome in future research and provide brief conclusions about the results of your study.
+

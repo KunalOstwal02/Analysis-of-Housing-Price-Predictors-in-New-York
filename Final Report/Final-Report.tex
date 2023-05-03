@@ -1,0 +1,137 @@
+\documentclass[letterpaper,9pt,twocolumn,twoside,]{pinp}
+
+%% Some pieces required from the pandoc template
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% Use the lineno option to display guide line numbers if required.
+% Note that the use of elements such as single-column equations
+% may affect the guide line number alignment.
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+% pinp change: the geometry package layout settings need to be set here, not in pinp.cls
+\geometry{layoutsize={0.95588\paperwidth,0.98864\paperheight},%
+  layouthoffset=0.02206\paperwidth, layoutvoffset=0.00568\paperheight}
+
+\definecolor{pinpblue}{HTML}{185FAF}  % imagecolorpicker on blue for new R logo
+\definecolor{pnasbluetext}{RGB}{101,0,0} %
+
+
+
+\title{A Template for Two or One-Column Vignettes}
+
+\author[a]{Luke Gallagher}
+\author[a]{Second Author}
+\author[a]{Second Author}
+\author[a]{Second Author}
+
+  \affil[a]{The University of Sydney}
+
+\setcounter{secnumdepth}{0}
+
+% Please give the surname of the lead author for the running footer
+\leadauthor{Gallagher, Kunal,}
+
+% Keywords are not mandatory, but authors are strongly encouraged to provide them. If provided, please include two to five keywords, separated by the pipe symbol, e.g:
+ 
+
+\begin{abstract}
+Using the dataset of housing prices in New York city that identifies the
+price and the distinguishing features of each home, we hoped to find out
+whether there is an accurate way to predict the price of a home based on
+its specific characteristics. It was found through using a combination
+of simple regression, comparison of a backward and forward model and by
+comparing the performance of a multivariate regression model to that of
+the simple regression model that the variables with the highest
+correlation to housing prices in New York and therefore serve as the
+best predictors of Price are Living.Area, Land.Value and Bathrooms with
+Living.Area having the best rate for prediction of overall Price.
+\end{abstract}
+
+\dates{This version was compiled on \today} 
+
+
+% initially we use doi so keep for backwards compatibility
+% new name is doi_footer
+\doifooter{\url{https://cran.r-project.org/package=YourPackage}}
+
+\pinpfootercontents{YourPackage Vignette}
+
+\begin{document}
+
+% Optional adjustment to line up main text (after abstract) of first page with line numbers, when using both lineno and twocolumn options.
+% You should only change this length when you've finalised the article contents.
+\verticaladjustment{-2pt}
+
+\maketitle
+\thispagestyle{firststyle}
+\ifthenelse{\boolean{shortarticle}}{\ifthenelse{\boolean{singlecolumn}}{\abscontentformatted}{\abscontent}}{}
+
+% If your first paragraph (i.e. with the \dropcap) contains a list environment (quote, quotation, theorem, definition, enumerate, itemize...), the line after the list may have some extra indentation. If this is the case, add \parshape=0 to the end of the list environment.
+
+\acknow{This template package builds upon, and extends, the work of the
+excellent \href{https://cran.r-project.org/package=rticles}{rticles}
+package, and both packages rely on the
+\href{http://www.pnas.org/site/authors/latex.xhtml}{PNAS LaTeX} macros.
+Both these sources are gratefully acknowledged as this work would not
+have been possible without them. Our extensions are under the same
+respective licensing term
+(\href{https://www.gnu.org/licenses/gpl-3.0.en.html}{GPL-3} and
+\href{https://www.latex-project.org/lppl/}{LPPL (\textgreater= 1.3)}).}
+
+\hypertarget{introduction}{%
+\subsection{Introduction}\label{introduction}}
+
+\begin{itemize}
+\item
+  The USA was hit hard by the COVID pandemic and New York City in
+  particular was the hardest hit city worldwide.
+\item
+  Hence, the New York real estate market is a buyer's market with total
+  sales to listing ratio of 0.12 i.e.~the supply of homes is much higher
+  than the demand for homes. Hence, it is a buyer's market.
+\end{itemize}
+
+\[\text{What set of factors best predicts price in a linear model?}\]
+
+\hypertarget{data-set}{%
+\subsection{Data set}\label{data-set}}
+
+Per common academic best practice, you can include your department,
+institution, and complete address, with the ZIP/postal code, for each
+author. Use lower case letters to match authors with institutions, as
+shown in the example. Authors with an ORCID ID may supply this
+information at submission.
+
+\hypertarget{analysis}{%
+\subsection{Analysis}\label{analysis}}
+
+\hypertarget{results}{%
+\subsection{Results}\label{results}}
+
+\hypertarget{discussion-and-conclusion}{%
+\subsection{Discussion and conclusion}\label{discussion-and-conclusion}}
+
+\hypertarget{references}{%
+\subsection{References}\label{references}}
+
+Here we differ from PNAS and suggest natbib. References will appear in
+author-year form. Use \texttt{\textbackslash{}citet\{\}},
+\texttt{\textbackslash{}citep\{\}}, etc as usual.
+
+We default to the \texttt{jss.bst} style. To switch to a different
+bibliography style, please use \texttt{biblio-style:\ style} in the YAML
+header.
+
+%\showmatmethods
+\showacknow
+
+
+\bibliography{pinp}
+\bibliographystyle{jss}
+
+
+
+\end{document}

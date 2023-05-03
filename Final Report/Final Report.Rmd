@@ -1,0 +1,187 @@
+---
+title: A Template for Two or One-Column Vignettes
+
+# Use letters for affiliations
+author:
+  - name: Luke Gallagher
+    affiliation: a
+  - name: Second Author
+    affiliation: a
+  - name: Second Author
+    affiliation: a
+  - name: Second Author
+    affiliation: a
+address:
+  - code: a
+    address: The University of Sydney
+    
+# Optional: line of arbitrary text with additional information.
+# Could be used, for example, to mention the bibliographic info in a post-print.
+# If not specified, defaults to "This version was compiled on \today"
+#date_subtitle: Published in *Journal of Statistical Software*, 2018
+
+# For footer text  TODO(fold into template, allow free form two-authors)
+lead_author_surname: Gallagher, Kunal, 
+
+# Place eg a DOI URL or CRAN Package URL here
+doi_footer: "https://cran.r-project.org/package=YourPackage"
+
+# Abstract
+abstract: |
+  Using the dataset of housing prices in New York city that identifies the price and the distinguishing features of each home, we hoped to find out whether there is an accurate way to predict the price of a home based on its specific characteristics. It was found through using a combination of simple regression, comparison of a backward and forward model and by comparing the performance of a multivariate regression model to that of the simple regression model that the variables with the highest correlation to housing prices in New York and therefore serve as the best predictors of Price are Living.Area, Land.Value and Bathrooms with Living.Area having the best rate for prediction of overall Price.
+
+# Optional: Acknowledgements
+acknowledgements: |
+  This template package builds upon, and extends, the work of the excellent
+  [rticles](https://cran.r-project.org/package=rticles) package, and both packages rely on the
+  [PNAS LaTeX](http://www.pnas.org/site/authors/latex.xhtml) macros. Both these sources are
+  gratefully acknowledged as this work would not have been possible without them.  Our extensions
+  are under the same respective licensing term
+  ([GPL-3](https://www.gnu.org/licenses/gpl-3.0.en.html) and
+  [LPPL (>= 1.3)](https://www.latex-project.org/lppl/)).
+
+
+# Paper size for the document, values of letter and a4
+papersize: letter
+
+# Font size of the document, values of 9pt (default), 10pt, 11pt and 12pt
+fontsize: 9pt
+
+# Optional: Force one-column layout, default is two-column
+#one_column: true
+
+# Optional: Enables lineno mode, but only if one_column mode is also true
+#lineno: true
+
+# Optional: Enable one-sided layout, default is two-sided
+#one_sided: true
+
+# Optional: Enable section numbering, default is unnumbered
+#numbersections: true
+
+# Optional: Specify the depth of section number, default is 5
+#secnumdepth: 5
+
+# Optional: Skip inserting final break between acknowledgements, default is false
+skip_final_break: true
+
+# Optional: Bibliography 
+bibliography: pinp
+
+# Optional: Enable a 'Draft' watermark on the document
+#watermark: true
+
+# Customize footer, eg by referencing the vignette
+footer_contents: "YourPackage Vignette"
+
+# Produce a pinp document
+output: pinp::pinp
+
+# Required: Vignette metadata for inclusion in a package.
+vignette: >
+  %\VignetteIndexEntry{YourPackage-vignetteentry}
+  %\VignetteKeywords{YourPackage, r, anotherkeyword}
+  %\VignettePackage{YourPackage}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r include=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(psych)
+library(scales)
+library(qtlcharts)
+library(gridExtra)
+```
+
+
+## Introduction 
+
+* The USA was hit hard by the COVID pandemic and New York City in particular was the hardest hit city worldwide.
+
+* Hence, the New York real estate market is a buyer's market with total sales to listing ratio of 0.12 i.e. the supply of homes is much higher than the demand for homes. Hence, it is a buyer's market.
+
+$$\text{What set of factors best predicts price in a linear model?}$$
+
+
+## Data set
+
+### New York Houses
+
+#### **Source**
+Random sample of houses taken from full Saratoga Housing Data
+
+#### **Variable of Interest**
+
+* Dependent Variable: Price of the house
+* With this model we intend to find the best prices
+* The price is determined by various factors that are included in the dataset
+
+#### Structure of dataset
+```{r, message=FALSE, echo=FALSE}
+houses <- read.table(file = "\resources\housing-prices-ge19.txt", sep = "\t", header = TRUE)
+```
+
+```{r, echo=FALSE, message=FALSE}
+houses <- houses %>% 
+  mutate(
+    Waterfront = factor(Waterfront),
+    New.Construct = factor(New.Construct),
+    Central.Air = factor(Central.Air),
+    Fuel.Type = factor(Fuel.Type),
+    Heat.Type = factor(Heat.Type),
+    Sewer.Type = factor(Sewer.Type),
+    Test = factor(Test)
+  )
+```
+
+
+**price:** price (US dollars)  
+**lotSize:** size of lot (acres)  
+**age:** age of house (years)  
+**landValue:** value of land (US dollars)  
+**livingArea:** living are (square feet)  
+**pctCollege: **percent of neighborhood that graduated college  
+**bedrooms: **number of bedrooms  
+**fireplaces: **number of fireplaces  
+**bathrooms: **number of bathrooms (half bathrooms have no shower or tub)  
+**rooms: **number of rooms  
+**heating: **type of heating system  
+**fuel: **fuel used for heating  
+**sewer: **type of sewer system  
+**waterfront: **whether property includes waterfront  
+**newConstruction: **whether the property is a new construction  
+**centralAir: **whether the house has central air
+## Analysis
+
+
+## Results
+
+
+## Discussion and conclusion
+
+
+
+## References 
+
+Here we differ from PNAS and suggest natbib. References will appear in
+author-year form. Use `\citet{}`, `\citep{}`, etc as usual.
+
+We default to the `jss.bst` style. To switch to a different bibliography
+style, please use `biblio-style: style` in the YAML header.
+
+
+<!-- pandoc writes all tables using longtable, which fails in 2-column mode
+
+  Species                    CBS     CV     G3
+  ----------------------- ------ ------ ------
+  1\. Acetaldehyde           0.0    0.0    0.0
+  2\. Vinyl alcohol          9.1    9.6   13.5
+  3\. Hydroxyethylidene     50.8   51.2   54.0
+
+  : Comparison of the fitted potential energy surfaces and ab initio
+  benchmark electronic energy calculations
+
+-->
+

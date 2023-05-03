@@ -1,0 +1,349 @@
+---
+title: "Price Analysis of New York Houses"
+author: "CC08E2"
+date: ""
+output: 
+  ioslides_presentation:
+    widescreen: true
+---
+
+```{r, message=FALSE, echo=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(psych)
+library(scales)
+library(qtlcharts)
+library(gridExtra)
+```
+
+```{css, echo=FALSE}
+
+```
+
+
+# Introduction
+## New York City Real Estate
+
+* The USA was hit hard by the COVID pandemic and New York City in particular was the hardest hit city worldwide.
+
+* Hence, the New York real estate market is a buyer's market with total sales to listing ratio of 0.12 i.e. the supply of homes is much higher than the demand for homes. Hence, it is a buyer's market.
+
+![New York Housing Trends.](./resources/nyc-trends.jpg){#id .class width=750 height=175px}
+
+$$\text{What set of factors best predicts price in a linear model?}$$
+  
+
+# Data set Discussion
+
+## New York Houses
+
+### **Source**
+Random sample of houses taken from full Saratoga Housing Data
+
+### **Variable of Interest**
+
+* Dependent Variable: Price of the house
+* With this model we intend to find the best prices
+* The price is determined by various factors that are included in the dataset
+
+## Structure of dataset
+```{r, message=FALSE, echo=FALSE}
+houses <- read.table(file = "./resources/housing-prices-ge19.txt", sep = "\t", header = TRUE)
+
+```
+
+```{r, echo=FALSE, message=FALSE}
+houses <- houses %>% 
+  mutate(
+    Waterfront = factor(Waterfront),
+    New.Construct = factor(New.Construct),
+    Central.Air = factor(Central.Air),
+    Fuel.Type = factor(Fuel.Type),
+    Heat.Type = factor(Heat.Type),
+    Sewer.Type = factor(Sewer.Type),
+    Test = factor(Test)
+  )
+```
+
+
+**price:** price (US dollars)  
+**lotSize:** size of lot (acres)  
+**age:** age of house (years)  
+**landValue:** value of land (US dollars)  
+**livingArea:** living are (square feet)  
+**pctCollege: **percent of neighborhood that graduated college  
+**bedrooms: **number of bedrooms  
+**fireplaces: **number of fireplaces  
+**bathrooms: **number of bathrooms (half bathrooms have no shower or tub)  
+**rooms: **number of rooms  
+**heating: **type of heating system  
+**fuel: **fuel used for heating  
+**sewer: **type of sewer system  
+**waterfront: **whether property includes waterfront  
+**newConstruction: **whether the property is a new construction  
+**centralAir: **whether the house has central air
+
+
+## Data Cleaning
+
+* Since the data is a part of a bigger, more comprehensive dataset, the datasets are already cleaned and nonw of the cells are empty.
+
+* There is an extra variable `Test` which is not a part of the original Saratoga dataset. Since we don't have a description of it, we omit it from our analysis to remove any confounding factors from the result.
+
+
+## Analysis (exploration):
+ 
+ - There are a number features of the data set such as `Living.Area`, `Age`,`Land.Value`, that seem like they ought to prima facie have a strong correlation with `Price`. Indeed, a heat map of the correlation between each pair of variables shows a number of interesting things.
+ 
+```{r, echo=FALSE, message=FALSE, fig.align='center', fig.height=4}
+# select numeric or integer type factors
+temp = select(houses, - which(sapply(houses, class) == "factor"))
+cor_mat = cor(temp)
+melted_cor_mat = cor_mat %>%
+  data.frame() %>% 
+  rownames_to_column(var = "var1") %>% 
+  gather(key = "var2", value = "cor", -var1)
+# correlation matrix heatmap
+melted_cor_mat %>% ggplot() + 
+  aes(x=var1, y=var2, fill=cor) + 
+  geom_tile() + theme_minimal(base_size = 30) +
+  scale_fill_gradient2(
+    low = "red", high = "darkgreen", mid = "white", 
+    midpoint = 0, limit = c(-1,1)) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 10), 
+        axis.text.y = element_text(hjust = 1, size = 10))
+```
+
+## Analysis (exploration):
+
+- The features `Bathrroms`, `Rooms`, and `Land.Value` all have a strong correlation coefficient with `Price`;
+
+- surprisingly, `Age` has a small relationship with `Price`;
+
+- less suprisingly, `Living.Area` has the greatest correlation coefficient with `Price` of $0.71$.
+
+```{r, echo=FALSE, message=FALSE, fig.align='center'}
+# interactive plot using 'qtlcharts'
+iplotCorr(temp)
+```
+
+# Simple Regression
+
+## Price vs Living Area
+
+ - Consequently, we decided to produce a simple linear model between `Living.Area` and `Price`, described by the equation $$y = 12844.1787 + 113.3729 x$$.
+```{r, echo=FALSE, message=FALSE, fig.width = 6, fig.height = 4}
+lm = lm(Price ~ Living.Area, data = houses)
+#plot(Price ~ Living.Area, data = housing)
+#abline(lm, lwd = 3, col = "red")
+houses %>% ggplot() + 
+  aes(y = Price, x = log(Land.Value)) + 
+  geom_point(alpha = 0.25) + 
+  geom_smooth(method = "lm") + 
+  labs(x = "Living Area (square feet)", y = "Price (US dollars)") + 
+  scale_y_continuous(labels = comma)
+
+
+```
+
+# Complex regression
+## Stepwise Functions
+
+ - In generating a multi-variate linear model, we used the Forward Stepwise Function (FSF) and the Backwards Stepwise Function (BSF). They both produced the same model:
+ 
+```{r echo=FALSE}
+M0 = lm(Price ~ 1, data = houses)
+Mf = lm(Price ~ . - Test, data = houses)
+step_forward = step(M0, scope = list(lower = M0, upper = Mf), 
+                    direction = "forward", trace = FALSE)
+step_back = step(Mf, direction = "backward", trace = FALSE)
+```  
+
+$$\text{Price} \sim \text{Living.Area} + \text{Land.Value} + \text{Bathrooms} +\\ \text{Waterfront} +     \text{New.Construct} + \text{Heat.Type} + \text{Lot.Size} + \\\text{Central.Air} + \text{Age} + \text{Rooms} + \text{Bedrooms}$$
+    
+* The factors: `Pct.College`, `Fireplaces`, `Sewer.Type`, `Fuel.Type` were not added to the model by the FSF and were excluded by the BSF.
+ 
+## Comparison of backward and forward model
+
+```{r echo=FALSE}
+sjPlot::tab_model(step_forward, step_back, show.ci = FALSE, show.aic = TRUE,
+  dv.labels = c("Forward model", "Backward model"))
+```
+
+# Assumptions
+
+
+## Linearity & Homoskedacity (Univariate)
+* Linearity: The residuals plotted in the univariate model appear symmetrically distributed above and below zero with some outliers above zero, therefore the data is assumed to be linear.
+
+* Homoskedacity: In the univariate model, it appears the variance is constant in the residuals plot for each error term and therefore the homoskedacity assumption is satisfied.
+```{r echo=FALSE, fig.height=3, fig.align='center'}
+# Checking assumtpions - Linearity and Homoskedacity
+
+
+plot(lm$residuals, xlab = "Index", ylab = "Residuals", main = "Univariate Linear Model") 
+abline(h=0, lwd = 3, col = "red")
+
+```
+
+## Linearity & Homoskedacity (Multivariate)
+* Linearity: The residuals plotted in the multivariate model appear symmetrically distributed above and below zero with some outliers above zero, therefore the data is assumed to be linear.
+
+* Homoskedacity: In the multivariate model too, it appears the variance is constant in the residuals plot for each error term and therefore the homoskedacity assumption is satisfied.
+```{r echo=FALSE, fig.height=3, fig.align='center'}
+# Checking assumtpions - Linearity and Homoskedacity
+
+
+plot(Mf$residuals, xlab = "Index", ylab = "Residuals", main = "Multivariate Linear Model")	
+abline(h=0, lwd = 3, col = "red")
+
+```
+
+## Normality 
+
+* The majority of points lie close to the diagonal line in both QQ plots, however, there are many outliers in the upper tail so the normality assumption is moderately well satisfied. 
+* Furthermore, we have a large sample size, and so can use the central limit theorem to justify approximately valid inferences under a normality assumption.
+
+```{r echo=FALSE, fig.align='center', fig.height=3}
+# Checking assumptions - Normality
+
+lm.res = lm$residuals
+Mf.res = Mf$residuals
+
+g1 = ggplot(data.frame(lm.res)) +
+  aes(sample = lm.res) + 
+  geom_qq_line() + 
+  geom_qq(size=1)
+
+g2 = ggplot(data.frame(Mf.res)) +
+  aes(sample = Mf.res) + 
+  geom_qq_line() + 
+  geom_qq(size=1)
+
+grid.arrange(g1, g2, nrow=1, ncol=2)
+```
+
+## Independence
+
+* We take it for granted that the data has been independently collected.  
+* Since it is a random sample of a larger dataset, the data is assumed to be void of any confounding factors related to sampling and therefore, we assume there is independence between error terms. 
+
+
+
+
+# Performance Analysis
+
+
+
+## In-sample Performance
+
+Here we compare the performance of the multivariate regression model to that of the simple linear regression model within the dataset.  
+
+* Simple Model $R^2$: `r summary(lm)$r.squared`   
+
+* Multivariate Model $R^2$: `r summary(step_forward)$r.squared`
+
+As we can see, the multivariate model has a better goodness of fit compared to the univariate model.
+
+## Out of Sample Performance
+- We chose Mean Absolute Error over Root Mean Square Error since there are several outliers in the data.
+```{r echo=FALSE}
+set.seed(2)
+n = nrow(houses)
+```
+```{r echo=FALSE}
+n_train = floor(0.8*n)
+n_test = n - n_train
+grp_labs = rep(c("Train", "Test"), times = c(n_train, n_test))
+houses$grp = sample(grp_labs)
+train_dat = houses %>% filter(grp == "Train")
+
+lm_simple_train = lm(Price ~ Living.Area, data = train_dat)
+lm_full_train = lm(formula = Price ~ Lot.Size + Waterfront + Age + 
+    Land.Value + New.Construct + Central.Air + Heat.Type + Living.Area + 
+    Bedrooms + Bathrooms + Rooms, data = train_dat)
+
+test_dat = houses %>% filter(grp == "Test")
+simple_pred = predict(lm_simple_train, newdata = test_dat)
+full_pred = predict(lm_full_train, newdata = test_dat)
+
+```
+
+We compared the mean absolute error of the two models.  
+ 
+- MAE(Univariate Model) = `r round(mean(abs(test_dat$Price - simple_pred)), 2)`  
+
+- MAE(Multivariate Model) = `r round(mean(abs(test_dat$Price - full_pred)), 2)`  
+
+The multivariate model has the lower mean absolute error, as such it has better predictive than the univarite model.
+
+## 10-fold Cross Validation
+
+We performed a 10-fold cross validation test on the two models.
+
+```{r echo=FALSE, message =FALSE}
+set.seed(2)
+```
+
+```{r echo=FALSE, message =FALSE}
+houses$grp = NULL
+fold_id = c(rep(1:17, each = 102))
+houses$fold_id = sample(fold_id, replace = FALSE)
+```
+
+
+
+```{r echo=FALSE, message=FALSE}
+k = 10
+simple_mse = full_mse = vector(mode = "numeric", length = k)
+simple_mae = full_mae = vector(mode = "numeric", length = k)
+
+for (i in 1:k) {
+  test_set = houses[fold_id == i,]
+  training_set = houses[fold_id != i,]
+  simple_lm = lm(Price ~ Living.Area, data = training_set)
+  simple_pred = predict(simple_lm, test_set)
+  simple_mse[i] = mean((test_set$Price - simple_pred) ^ 2)
+  simple_mae[i] = mean(abs(test_set$Price - simple_pred))
+  full_lm = lm(formula = Price ~ Lot.Size + Waterfront + Age + 
+    Land.Value + New.Construct + Central.Air + Heat.Type + Living.Area + 
+    Bedrooms + Bathrooms + Rooms, data = training_set)
+  full_pred = predict(full_lm, test_set)
+  full_mse[i] = mean((test_set$Price - full_pred)^2)
+  full_mae[i] = mean(abs(test_set$Price - full_pred))
+}
+```
+
+
+
+```{r echo=FALSE, message =FALSE}
+cv_res = tibble(simple_mse, full_mse, simple_mae, full_mae)
+```
+
+
+
+```{r echo=FALSE}
+cv_res %>% gather(key = "metric", value = "error") %>% 
+  separate(col = metric, into = c("model","metric")) %>% 
+  ggplot(aes(x = model, y = error)) + facet_wrap(~metric, scales = "free_y") + 
+  geom_boxplot() 
+```
+
+
+# Results
+## Summary
+From our analysis it was found that the top three variables with the strongest ability to predict housing price were Land.Value, Living.Area and Bathrooms. Of these three variables, Price and Living.Area have the highest correlation relationship. When thinking about these results, it seems quite clear that the size of a property would increase the price and the larger the property, the more likely the higher the Land.Value. Bathrooms are an interesting addition, however, it would be fair to say that the larger a house is the more bathrooms it is likely to have. While these seem like obvious predictors of housing prices, these potential assumptions are backed up by the analysis we have undertaken.
+
+## Summary
+In answer to our inference: what is set of features that best predicts  `Price` we found that:  
+
+$$\text{Price} \sim \text{Living.Area} + \text{Land.Value} + \text{Bathrooms} +\\ \text{Waterfront} +     \text{New.Construct} + \text{Heat.Type} + \text{Lot.Size} + \\\text{Central.Air} + \text{Age} + \text{Rooms} + \text{Bedrooms}$$
+
+Provides the best fit of the linear models we tested. It’s $R^2$ indicated a good fit
+
+## Discussion and conclusion: 
+
+Our analysis found that the multivariable model generated by the FSF is a good predictor of house prices, and improves the accuracy of any univariate linear model, having satisfied the assumptions required of a linear model. 
+Our analysis did not investigate the trends of subgroups of price (such as `Fuel.Type` and `Energy.Type`. As such, there may be unexplored trends that give rise to situations such as Simposn’s paradox. Further limitations include the collection of data 
+
